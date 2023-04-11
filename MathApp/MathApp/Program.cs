@@ -78,7 +78,7 @@ app.Run(async (HttpContext context) =>
                     result = firstNumber + secondNumber;
                     break;
 
-                case "Subtract":
+                case "subtract":
                 case "-":
                     result = firstNumber - secondNumber;
                     break;
