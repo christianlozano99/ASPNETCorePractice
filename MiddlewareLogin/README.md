@@ -1,164 +1,141 @@
-# Introduction to Middleware
-  Middleware is a component that is assembled into the application pipeline to handle requests and responses.
+# Requirement: Create an Asp.Net Core Web Application that receives username and password via POST request (from Postman).
 
-  Middlewares are chained one-after-other and execute in the same sequence how they're added.
-
-
-  ![image](https://user-images.githubusercontent.com/55676291/235966274-178584e8-9165-419c-b807-f39b95e9b831.png)
-  
-  ![image](https://user-images.githubusercontent.com/55676291/235966309-6ed9c0cf-582d-445b-b99a-1cd1fbdb8cac.png)
+It receives "email" and "password" as query string from request body.
 
 
 
-  Middleware can be a request delegate (anonymous method or lambda expression) [or] a class.
+# Parameters:
+
+* email: any email address
+
+* password: any password string
+
+* Finally, it should return message as either "Successful login" or "Invalid login".
 
 
 
-  ## Middleware Run
+# Process:
 
-```
-app.Run( )
-
-app.Run(async (HttpContext context) =>
-{
-//code
-});
-```
-The extension method called “Run” is used to execute a terminating / short-circuiting middleware that doesn’t forward the request to the next middleware.
+If email is "admin@example.com" and password is "admin1234", it is treated as a valid login; otherwise invalid login.
 
 
 
-## Middleware Chain
+## Example #1:
 
-  ![image](https://user-images.githubusercontent.com/55676291/235964493-d26f6ebf-3cd1-4413-b84b-74837e06c10c.png)
+If you receive a HTTP POST request at path "/", if the valid email and password are submitted, it should return HTTP 200 response.
 
-  ```
-  app.Use( )
+Request Url: /
 
-  app.Use(async (HttpContext context, RequestDelegate next) =>
-  {
-    //before logic
-    await next(context);
-    //after logic
-  });
-  ```
-  The extension method called “Use” is used to execute a non-terminating / short-circuiting middleware that may / may not forward the request to the next middleware.
+Request Method: POST
+
+Request body (input): email=admin@example.com&password=admin1234
+
+Response Status Code: 200
+
+### Response body (output):
+
+**Successful login**
 
 
 
 
+## Example #2:
 
-## Middleware Class
-Middleware class is used to separate the middleware logic from a lambda expression to a separate / reusable class.
+If you receive a HTTP POST request at path "/", if either email or password is incorrect, it should return HTTP 400 response.
 
+Request Url: /
 
-```
-class MiddlewareClassName : IMiddleware
-{
-  public async Task InvokeAsync(HttpContext context, RequestDelegate next)
-  {
-    //before logic
-    await next(context);
-    //after logic
-  }
-}
-app.UseMiddleware<MiddlewareClassName>();
-```
+Request Method: POST
 
+Request body (input): email=manager@example.com&password=manager-password
 
-## Middleware Extensions
-```
-class MiddlewareClassName : IMiddleware
-{
-  public async Task InvokeAsync(HttpContext context,RequestDelegate next)
-  {
-    //before logic
-    await next(context);
-    //after logic
-  }
-});
-```
+Response Status Code: 400
 
-### Middleware extension method is used to invoke the middleware with a single method call.
-```
-static class ClassName
-{
-  public static IApplicationBuilder ExtensionMethodName(this IApplicationBuilder app)
-  {
-    return app.UseMiddleware<MiddlewareClassName>();
-  }
-}
-app.ExtensionMethodName();
-```
+### Response body (output):
 
-
-## Conventional Middleware
-```
-class MiddlewareClassName
-{
-  private readonly RequestDelegate _next;
- 
-  public MiddlewareClassName(RequestDelegate next)
-  {
-    _next = next;
-  }
- 
-  public async Task InvokeAsync(HttpContext context)
-  {
-   //before logic
-   await _next(context);
-   //after logic
-  }
-});
-
-
-static class ClassName
-{
-  public static IApplicationBuilder ExtensionMethodName(this IApplicationBuilder app)
-  {
-   return app.UseMiddleware<MiddlewareClassName>();
-  }
-}
-app.ExtensionMethodName();
-```
+**invalid login**
 
 
 
+## Example #3:
 
-## The Right Order of Middleware
+If you receive a HTTP POST request at path "/", if neither email and password is submitted, it should return HTTP 400 response.
 
-![image](https://user-images.githubusercontent.com/55676291/235965411-b17b8ee5-d1ba-485e-baaf-ec360bb2bb1b.png)
+Request Url: /
 
+Request Method: POST
 
-```
-app.UseExceptionHandler("/Error");
-app.UseHsts();
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-app.UseRouting();
-app.UseCors();
-app.UseAuthentication();
-app.UseAuthorization();
-app.UseSession();
-app.MapControllers();
-//add your custom middlewares
-app.Run();
-```
+Request body (input): [empty]
 
-## Middleware UseWhen
+Response Status Code: 400
 
-![image](https://user-images.githubusercontent.com/55676291/235965369-0efcf96c-e38c-40df-bc2e-96efff96cda4.png)
+### Response body (output):
+
+**Invalid input for 'email'**
+**Invalid input for 'password'**
 
 
-```
-app.UseWhen( )
 
-app.UseWhen(
-  context => { return boolean; },
-  app =>
-  {
-    //add your middlewares
-  }
-);
-```
-The extension method called “UseWhen” is used to execute a branch of middleware only when the specified condition is true.
+## Example #4:
+
+If you receive a HTTP POST request at path "/", if password is not submitted, it should return HTTP 400 response.
+
+Request Url: /
+
+Request Method: POST
+
+Request body (input): email=test@example.com
+
+Response Status Code: 400
+
+### Response body (output):
+
+**Invalid input for 'password'**
+
+
+
+## Example #5:
+
+If you receive a HTTP POST request at path "/", if email not is submitted, it should return HTTP 400 response.
+
+Request Url: /
+
+Request Method: POST
+
+Request body (input): password=1234
+
+Response Status Code: 400
+
+### Response body (output):
+
+**Invalid input for 'password'**
+
+
+
+## Example #6:
+
+If you receive a HTTP GET request at path "/", it should return HTTP 200 response.
+
+Request Url: /
+
+Request Method: GET
+
+Response Status Code: 200
+
+### Response body (output):
+
+**No response**
+
+
+
+
+
+# Instructions:
+
+Use custom conventional middleware (with middleware extensions) to handle the post request at path "/"
+
+The "email" and "password" values are mandatory
+
+Return appropriate HTTP status codes based on above examples.
+
+Do not create controllers or any other concept which is not yet covered, to avoid confusion.
