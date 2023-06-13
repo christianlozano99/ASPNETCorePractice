@@ -1,6 +1,12 @@
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using RoutingExample.CustomConstraints;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddRouting(options => 
+{ options.ConstraintMap.Add("months", typeof (MonthsCustomConstraint)); 
+});
+
 var app = builder.Build();
 
 // enabled routing
@@ -138,7 +144,8 @@ app.UseEndpoints(endpoints =>
 
     // we can also do a regex(expression) this is to do a regular expression for the incoming URL
     // sales-report/2030/apr, for simplicity setting a min of 1900 for year and only accepting months apr, jul, oct, and jan
-    endpoints.Map("sales-report/{year:int:min(1900)}/{month:regex(^(apr|jul|oct|jan)$)}", async context =>
+    // created custom contraint months
+    endpoints.Map("sales-report/{year:int:min(1900)}/{month:months}", async context =>
     {
         int year = Convert.ToInt32(context.Request.RouteValues["year"]);
 
@@ -147,6 +154,10 @@ app.UseEndpoints(endpoints =>
         await context.Response.WriteAsync($"Sales report = {year} - {month}");
     });
 });
+
+
+// if we have literal routes it takes presidence to map to a it over a parameter one
+
 
 
 // terminating or short cirtuiting middlerware
